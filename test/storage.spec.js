@@ -1,25 +1,32 @@
 const Storage = artifacts.require('./Storage.sol');
 const ipfsAPI = require('ipfs-api');
 const fs = require('fs');
+const IPFSStorageAdapter = require('./IPFSStorageAdapter');
+
+const nyanCatHash = 'QmcX5MyEF5UyqLGQWppBb4JmxnruBFjBpRjUzhCKfCmhmk';
+
+const assertValidIPFSId = (id) => {
+    assert.ok(id.id);
+    assert.ok(id.publicKey);
+    assert.ok(id.addresses);
+    assert.ok(id.agentVersion);
+    assert.ok(id.protocolVersion);
+}
 
 describe('IPFS', () => {
-  const ipfs = ipfsAPI();
-  let nyanCatHash;
+  const ipfs = new ipfsAPI();
+  let nyanCatHashFromIPFS;
 
   it('should connect to IPFS', async () => {
     const ipfsId = await ipfs.id()
-    assert.ok(ipfsId.id);
-    assert.ok(ipfsId.publicKey);
-    assert.ok(ipfsId.addresses);
-    assert.ok(ipfsId.agentVersion);
-    assert.ok(ipfsId.protocolVersion);
+    assertValidIPFSId(ipfsId);
   });
 
   it('should be able to add a file to IPFS', async () => {
     const nyanCatGif = fs.readFileSync('./nyan.gif');
     const res = await ipfs.add(nyanCatGif);
-    nyanCatHash = res[0].hash;
-    assert.equal('QmcX5MyEF5UyqLGQWppBb4JmxnruBFjBpRjUzhCKfCmhmk', nyanCatHash);
+    nyanCatHashFromIPFS = res[0].hash;
+    assert.equal(nyanCatHash, nyanCatHashFromIPFS);
   });
 
   it('should be able to get a file from IPFS', async () => {
@@ -29,7 +36,17 @@ describe('IPFS', () => {
   });
 });
 
-contract('Storage', () => {
+describe('IPFSStorageAdapter', () => {
+  let storage;
+  let ipfsStorageAdapter;
 
+  before(async () => {
+    storage = await Storage.deployed();
+    ipfsStorageAdapter= new IPFSStorageAdapter()
+  });
+
+  it('should initialize IPFS', async () => {
+    const ipfsId = await ipfsStorageAdapter.getId()
+    assertValidIPFSId(ipfsId);
+  });
 });
-
