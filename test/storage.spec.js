@@ -4,6 +4,7 @@ const fs = require('fs');
 const IPFSStorageAdapter = require('./IPFSStorageAdapter');
 
 const nyanCatMultiHash = 'QmcX5MyEF5UyqLGQWppBb4JmxnruBFjBpRjUzhCKfCmhmk';
+const nyanCatBytes32 = '0xd2af4cd2ed452b6cb4889252b2668840a1c0038f041139c1a175f74d0b570e13';
 const nyanCatGifPath = './nyan.gif';
 const nyanCatGifFromIPFSPath = nyanCatGifPath + '.copy';
 
@@ -73,9 +74,19 @@ describe('IPFSStorageAdapter', () => {
   });
 
   describe('bytes32ToMultiHash', () => {
+    it('should convert from bytes32 to multiHash format', async () => {
+      const multiHash = ipfsStorageAdapter.bytes32ToMultiHash(nyanCatBytes32);
+      assert.equal(nyanCatMultiHash, multiHash);
+    });
   });
+
   describe('multiHashToBytes32', () => {
+    it('should convert from multiHash to bytes32 format', async () => {
+      const bytes32 = ipfsStorageAdapter.multiHashToBytes32(nyanCatMultiHash);
+      assert.equal(nyanCatBytes32, bytes32);
+    });
   });
+
   describe('saveFile', () => {
   });
   describe('loadFile', () => {
