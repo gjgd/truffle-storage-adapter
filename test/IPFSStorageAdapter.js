@@ -1,5 +1,6 @@
 const ipfsAPI = require('ipfs-api');
 const bs58 = require('bs58');
+const fs = require('fs');
 
 module.exports = class IPFSStorageAdapter {
   constructor(config) {
@@ -11,19 +12,19 @@ module.exports = class IPFSStorageAdapter {
    * and IPFS
    */
 
+  async getId() {
+    return await this.ipfs.id();
+  }
+
   async writeFile(path) {
     const buffer = fs.readFileSync(path);
-    const multiHash = await this.ipfs.add(buffer);
-    return multiHash;
+    const ipfsFileData = await this.ipfs.add(buffer);
+    return ipfsFileData[0];
   }
 
   async getFile(multiHash, path) {
     const ipfsBuffer = await this.ipfs.cat(multiHash);
     fs.writeFileSync(path);
-  }
-
-  async getId() {
-    return await this.ipfs.id();
   }
 
   /*
@@ -47,8 +48,9 @@ module.exports = class IPFSStorageAdapter {
    */
 
   async saveFile(storageContract, path) {
-    const multiHash = await writeFile(path);
-    const bytes32Hash = multiHashToBytes32;
+    const ipfsFileData = await writeFile(path);
+    const multiHash = ipfsFileData.hash;
+    const bytes32Hash = multiHashToBytes32(multiHash);
     await storageContract.setDataHash(bytes32Hash);
   }
 

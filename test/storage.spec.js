@@ -3,7 +3,9 @@ const ipfsAPI = require('ipfs-api');
 const fs = require('fs');
 const IPFSStorageAdapter = require('./IPFSStorageAdapter');
 
-const nyanCatHash = 'QmcX5MyEF5UyqLGQWppBb4JmxnruBFjBpRjUzhCKfCmhmk';
+const nyanCatMultiHash = 'QmcX5MyEF5UyqLGQWppBb4JmxnruBFjBpRjUzhCKfCmhmk';
+const nyanCatGifPath = './nyan.gif';
+const nyanCatGifFromIPFSPath = nyanCatGifPath + '.copy';
 
 const assertValidIPFSId = (id) => {
     assert.ok(id.id);
@@ -15,7 +17,7 @@ const assertValidIPFSId = (id) => {
 
 describe('IPFS', () => {
   const ipfs = new ipfsAPI();
-  let nyanCatHashFromIPFS;
+  let nyanCatMultiHashFromIPFS;
 
   it('should connect to IPFS', async () => {
     const ipfsId = await ipfs.id()
@@ -23,15 +25,15 @@ describe('IPFS', () => {
   });
 
   it('should be able to add a file to IPFS', async () => {
-    const nyanCatGif = fs.readFileSync('./nyan.gif');
-    const res = await ipfs.add(nyanCatGif);
-    nyanCatHashFromIPFS = res[0].hash;
-    assert.equal(nyanCatHash, nyanCatHashFromIPFS);
+    const buffer = fs.readFileSync(nyanCatGifPath);
+    const res = await ipfs.add(buffer);
+    nyanCatMultiHashFromIPFS = res[0].hash;
+    assert.equal(nyanCatMultiHash, nyanCatMultiHashFromIPFS);
   });
 
   it('should be able to get a file from IPFS', async () => {
-    const nyanCatFromIPFS = await ipfs.cat(nyanCatHash);
-    const originalNyanCat = fs.readFileSync('./nyan.gif');
+    const nyanCatFromIPFS = await ipfs.cat(nyanCatMultiHash);
+    const originalNyanCat = fs.readFileSync(nyanCatGifPath);
     assert.deepEqual(originalNyanCat, nyanCatFromIPFS);
   });
 });
@@ -45,8 +47,37 @@ describe('IPFSStorageAdapter', () => {
     ipfsStorageAdapter= new IPFSStorageAdapter()
   });
 
-  it('should initialize IPFS', async () => {
-    const ipfsId = await ipfsStorageAdapter.getId()
-    assertValidIPFSId(ipfsId);
+  describe('getId', () => {
+    it('should return a valid IPFS id', async () => {
+      const ipfsId = await ipfsStorageAdapter.getId()
+      assertValidIPFSId(ipfsId);
+    });
+  });
+
+  describe('writeFile', () => {
+    it('should return the multiHash of the file written to IPFS', async () => {
+      const ipfsFileData = await ipfsStorageAdapter.writeFile(nyanCatGifPath);
+      const multiHash = ipfsFileData.hash;
+      assert.equal(nyanCatMultiHash, multiHash);
+    });
+  });
+
+  describe('getFile', () => {
+    it('should get the file and save it to the local file system', async () => {
+      // TOOD test that file does not exist
+      //await ipfsStorageAdapter.getFile(nyanCatMultiHash, nyanCatGifFromIPFSPath);
+      //const originalFileBuffer = fs.readFileSync(nyanCatGifPath);
+      //const ipfsFileBuffer = fs.readFileSync(nyanCatGifFromIPFSPath);
+      //assert.deepEqual(originalFileBuffer, ipfsFileBuffer);
+    });
+  });
+
+  describe('bytes32ToMultiHash', () => {
+  });
+  describe('multiHashToBytes32', () => {
+  });
+  describe('saveFile', () => {
+  });
+  describe('loadFile', () => {
   });
 });
