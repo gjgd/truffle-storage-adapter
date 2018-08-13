@@ -92,7 +92,21 @@ describe('IPFSStorageAdapter', () => {
   });
 
   describe('saveFile', () => {
+    it('should save the hash on the contract', async () => {
+      const bytes32Hash = await ipfsStorageAdapter.saveFile(storageContract, nyanCatGifPath);
+      assert.equal(bytes32Hash, await storageContract.dataHash.call());
+    });
   });
+
   describe('loadFile', () => {
+    it('should save the hash on the contract', async () => {
+      assert(!fs.existsSync(nyanCatGifFromIPFSPath))
+      await ipfsStorageAdapter.loadFile(storageContract, nyanCatGifFromIPFSPath);
+      assert(fs.existsSync(nyanCatGifFromIPFSPath))
+      const originalFileBuffer = fs.readFileSync(nyanCatGifPath);
+      const ipfsFileBuffer = fs.readFileSync(nyanCatGifFromIPFSPath);
+      assert.deepEqual(originalFileBuffer, ipfsFileBuffer);
+      fs.unlinkSync(nyanCatGifFromIPFSPath);
+    });
   });
 });
