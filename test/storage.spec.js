@@ -40,11 +40,11 @@ describe('IPFS', () => {
 });
 
 describe('IPFSStorageAdapter', () => {
-  let storage;
+  let storageContract;
   let ipfsStorageAdapter;
 
   before(async () => {
-    storage = await Storage.deployed();
+    storageContract = await Storage.deployed();
     ipfsStorageAdapter= new IPFSStorageAdapter()
   });
 
@@ -65,11 +65,15 @@ describe('IPFSStorageAdapter', () => {
 
   describe('getFile', () => {
     it('should get the file and save it to the local file system', async () => {
-      // TOOD test that file does not exist
-      //await ipfsStorageAdapter.getFile(nyanCatMultiHash, nyanCatGifFromIPFSPath);
-      //const originalFileBuffer = fs.readFileSync(nyanCatGifPath);
-      //const ipfsFileBuffer = fs.readFileSync(nyanCatGifFromIPFSPath);
-      //assert.deepEqual(originalFileBuffer, ipfsFileBuffer);
+      // If file exists, remove it
+      if (fs.existsSync(nyanCatGifFromIPFSPath)) {
+        fs.unlinkSync(nyanCatGifFromIPFSPath);
+      }
+      await ipfsStorageAdapter.getFile(nyanCatMultiHash, nyanCatGifFromIPFSPath);
+      const originalFileBuffer = fs.readFileSync(nyanCatGifPath);
+      const ipfsFileBuffer = fs.readFileSync(nyanCatGifFromIPFSPath);
+      assert.deepEqual(originalFileBuffer, ipfsFileBuffer);
+      fs.unlinkSync(nyanCatGifFromIPFSPath);
     });
   });
 

@@ -24,7 +24,7 @@ module.exports = class IPFSStorageAdapter {
 
   async getFile(multiHash, path) {
     const ipfsBuffer = await this.ipfs.cat(multiHash);
-    fs.writeFileSync(path);
+    fs.writeFileSync(path, ipfsBuffer);
   }
 
   /*
@@ -48,15 +48,16 @@ module.exports = class IPFSStorageAdapter {
    */
 
   async saveFile(storageContract, path) {
-    const ipfsFileData = await writeFile(path);
+    const ipfsFileData = await this.writeFile(path);
     const multiHash = ipfsFileData.hash;
-    const bytes32Hash = multiHashToBytes32(multiHash);
+    const bytes32Hash = this.multiHashToBytes32(multiHash);
     await storageContract.setDataHash(bytes32Hash);
+    return bytes32Hash;
   }
 
-  async loadFile(storageAdapter, path) {
+  async loadFile(storageContract, path) {
     const bytes32Hash = await storageContract.dataHash.call();
-    const multiHash = bytes32ToMultiHash(bytes32Hash);
-    await getFile(multiHash, path);
+    const multiHash = this.bytes32ToMultiHash(bytes32Hash);
+    await this.getFile(multiHash, path);
   }
 }
